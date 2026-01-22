@@ -55,9 +55,15 @@ namespace VidSharePro.Tests.Application
 
             _repoMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                      .ReturnsAsync(video);
+            // Use Reflection to find the private method
+            var method = typeof(JobProcessorWorker)
+                .GetMethod("HandleVideoValidation", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
             // Act
-            await _worker.HandleVideoValidation(job, _serviceProvider, CancellationToken.None);
+            //await _worker.HandleVideoValidation(job, _serviceProvider, CancellationToken.None);
+            // Invoke it
+            var task = (Task)method.Invoke(_worker, new object[] { job, _serviceProvider, CancellationToken.None });
+            await task;
 
             // Assert
             // Verify that ProcessingService was NEVER called because we returned early

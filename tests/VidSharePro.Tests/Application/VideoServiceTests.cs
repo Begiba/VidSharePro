@@ -47,16 +47,15 @@ public class VideoServiceTests
         var ct = CancellationToken.None;
 
         // Match the signature: (Guid, bool, CancellationToken)
-        _repoMock.Setup(repo => repo.GetByUserIdAsync(
+        _repoMock.Setup(repo => repo.GetByIdAsync(
             It.IsAny<Guid>(),
             It.IsAny<bool>(), // This matches the 'trackChanges' or 'includeFormats' bool
-            It.IsAny<CancellationToken>()))
-        .ReturnsAsync(new List<Video>());
+            It.IsAny<CancellationToken>()));
 
         // Act
         await _service.GetUserVideosAsync(userId, ct);
 
         // Assert
-        _repoMock.Verify(x => x.GetByUserIdAsync(userId, It.IsAny<bool>(), ct), Times.Once);
+        _repoMock.Verify(x => x.GetByIdAsync(userId, It.IsAny<bool>(), ct), Times.Once);
     }
 }

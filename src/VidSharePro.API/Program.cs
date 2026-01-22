@@ -168,3 +168,5 @@ app.Use(async (context, next) =>
     await next();
 });
 app.Run();
+
+public partial class Program { } // For integration testing purposes

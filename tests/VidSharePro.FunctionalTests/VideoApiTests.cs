@@ -2,8 +2,9 @@
 using System.Net;
 using System.Threading.Tasks;
 using Xunit;
-using Microsoft.AspNetCore.Mvc.Testing; // Fix: Add missing using directive
-
+using Microsoft.AspNetCore.Mvc.Testing;
+using System.Net.Http; // Fix: Add missing using directive
+using Shouldly; 
 public class VideoApiTests : IClassFixture<WebApplicationFactory<Program>>
 {
     private readonly WebApplicationFactory<Program> _factory;
@@ -21,6 +22,6 @@ public class VideoApiTests : IClassFixture<WebApplicationFactory<Program>>
 
         var response = await client.PostAsync("/api/videos/upload", content);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 }
