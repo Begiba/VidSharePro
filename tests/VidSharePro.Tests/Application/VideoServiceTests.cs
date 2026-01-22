@@ -56,6 +56,7 @@ public class VideoServiceTests
         await _service.GetUserVideosAsync(userId, ct);
 
         // Assert
-        _repoMock.Verify(x => x.GetByIdAsync(userId, It.IsAny<bool>(), ct), Times.Once);
+        // Change this line to match the Performed Invocations in the error log:
+        _repoMock.Verify(x => x.GetByOwnerIdAsync(userId, It.IsAny<CancellationToken>()), Times.Once);
     }
 }

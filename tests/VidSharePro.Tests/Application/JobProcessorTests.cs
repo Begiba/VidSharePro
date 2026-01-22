@@ -36,37 +36,38 @@ namespace VidSharePro.Tests.Application
         public async Task HandleVideoValidation_ShouldReturnEarly_IfVideoAlreadyReady()
         {
             // Arrange
-            // 1. Define the 'job' variable here
             var videoId = Guid.NewGuid();
             var job = new BackgroundJob("VideoValidation", videoId.ToString());
-            //{
-            //    Id = Guid.NewGuid(),
-            //    JobType = "VideoValidation",
-            //    ReferenceId = videoId.ToString(), // This links the job to the video
-            //    Status = 0 // Pending
-            //};
 
             var video = new Video("Title", "file.mp4", 1024, "path", Guid.NewGuid());
-            // Use reflection or a helper to force 'Ready' status for the test if private
-            // Or call the sequence: .CompleteUpload() -> .StartProcessing() -> .TransitionToReady()
+
+            // 1. Move through the required states
             video.CompleteUpload();
             video.StartProcessing();
+
+            // 2. ADD THIS: Satisfy the Domain Guard Clause
+            // Assuming you have a method like AddFormat or a collection you can access
+            video.AddFormat(
+                "1080p",
+                "storage/videos/1080.mp4",
+                "video/mp4",
+                5000000 // example 5MB size
+            );
+
+            // 3. Now this will no longer throw the InvalidOperationException
             video.TransitionToReady();
 
-            _repoMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            _repoMock.Setup(r => r.GetByIdAsync(videoId, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                      .ReturnsAsync(video);
-            // Use Reflection to find the private method
             var method = typeof(JobProcessorWorker)
-                .GetMethod("HandleVideoValidation", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        .GetMethod("HandleVideoValidation", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
             // Act
             //await _worker.HandleVideoValidation(job, _serviceProvider, CancellationToken.None);
-            // Invoke it
             var task = (Task)method.Invoke(_worker, new object[] { job, _serviceProvider, CancellationToken.None });
             await task;
 
             // Assert
-            // Verify that ProcessingService was NEVER called because we returned early
             _processingServiceMock.Verify(p => p.ProcessAndGenerateThumbnailAsync(It.IsAny<Video>(), It.IsAny<CancellationToken>()), Times.Never);
         }
     }
